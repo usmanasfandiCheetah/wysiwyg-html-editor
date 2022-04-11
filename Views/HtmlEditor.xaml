@@ -1,0 +1,304 @@
+﻿<UserControl x:Class="mages.editor.Views.HtmlEditor"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:mages.editor.Views"
+             xmlns:conv="clr-namespace:mages.editor.Converters"
+             xmlns:fa5="http://schemas.fontawesome.com/icons/"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             mc:Ignorable="d" 
+             Loaded="UserControl_Loaded"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <conv:EditorContentConverter x:Key="HtmlConverter" />
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+        <SolidColorBrush x:Key="EditorOrangeColor" Color="#FFFF7400" />
+        <SolidColorBrush x:Key="GreenColor" Color="#FF1BA556" />
+        <SolidColorBrush x:Key="BlueColor" Color="#FF357AB9" />
+        <SolidColorBrush x:Key="RedColor" Color="#FFD44525" />
+
+        <Style x:Key="ToolBarImage"
+               TargetType="{x:Type Image}">
+            <Setter Property="Width"
+                    Value="16" />
+            <Setter Property="Height"
+                    Value="16" />
+        </Style>
+
+        <Style x:Key="ViewTypeToggle" TargetType="{x:Type RadioButton}">
+            <Setter Property="Margin" Value="5,0" />
+            <Setter Property="Foreground" Value="{StaticResource EditorOrangeColor}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type RadioButton}">
+                        <Border x:Name="Bd"
+                                Padding="4,1"
+                                BorderBrush="Transparent"
+                                BorderThickness="1">
+                            <ContentPresenter Content="{TemplateBinding Content}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked"
+                                     Value="True">
+                                <Setter Property="Background"
+                                        Value="#333399FF"
+                                        TargetName="Bd" />
+                                <Setter Property="BorderBrush"
+                                        Value="#FF3399FF"
+                                        TargetName="Bd" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ToggleContextMenu"
+               TargetType="{x:Type ContextMenu}">
+            <Setter Property="Background"
+                    Value="#FFF" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ContextMenu}">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ItemsPresenter Margin="{TemplateBinding Padding}"
+                                            SnapsToDevicePixels="true" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="{x:Type MenuItem}">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type MenuItem}">
+                                    <ContentPresenter Margin="{TemplateBinding Padding}"
+                                                      ContentSource="Header"
+                                                      RecognizesAccessKey="False" />
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top">
+
+            <ToolBarTray>
+
+                <ToolBar Padding="3">
+                    <ComboBox Tag="FontFamily" Width="128" ItemsSource="{Binding AvailableFonts}" 
+                              SelectedItem="{Binding SelectedFont}">
+                        <ComboBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel Width="250" />
+                            </ItemsPanelTemplate>
+                        </ComboBox.ItemsPanel>
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" FontFamily="{Binding}" FontSize="12"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <ComboBox Tag="FontSize" Width="42" ItemsSource="{Binding FontSizes}"
+                              SelectedItem="{Binding SelectedFontSize}"/>
+
+                    <Separator Margin="3" />
+
+                    <ToggleButton ToolTip="Bold" Margin="5,0" Command="EditingCommands.ToggleBold" CommandTarget="{Binding ElementName=rtf}" IsChecked="{Binding DocStyle.IsBold}">
+                        <fa5:FontAwesome Icon="Solid_Bold" Foreground="{StaticResource EditorOrangeColor}"/>
+                    </ToggleButton>
+
+                    <ToggleButton ToolTip="Italic" Margin="5,0" Command="EditingCommands.ToggleItalic" CommandTarget="{Binding ElementName=rtf}" IsChecked="{Binding DocStyle.IsItalic}">
+                        <fa5:FontAwesome Icon="Solid_Italic" Foreground="{StaticResource EditorOrangeColor}"/>
+                    </ToggleButton>
+
+                    <ToggleButton ToolTip="Underline" Margin="5,0" Command="EditingCommands.ToggleUnderline" CommandTarget="{Binding ElementName=rtf}" IsChecked="{Binding DocStyle.IsUnderlined}">
+                        <fa5:FontAwesome Icon="Solid_Underline" Foreground="{StaticResource EditorOrangeColor}"/>
+                    </ToggleButton>
+
+                    <Separator Margin="3" />
+
+                    <Button ToolTip="Cut" Margin="5,0" Command="ApplicationCommands.Cut" CommandTarget="{Binding ElementName=rtf}">
+                        <fa5:FontAwesome Icon="Solid_Cut" Foreground="#FFFF7400"/>
+                    </Button>
+
+                    <Button ToolTip="Copy" Margin="5,0" Command="ApplicationCommands.Copy" CommandTarget="{Binding ElementName=rtf}">
+                        <fa5:FontAwesome Icon="Solid_Copy" Foreground="#FFFF7400"/>
+                    </Button>
+
+                    <Button ToolTip="Paste" Margin="5,0" Command="ApplicationCommands.Paste" CommandTarget="{Binding ElementName=rtf}">
+                        <fa5:FontAwesome Icon="Solid_Paste" Foreground="#FFFF7400"/>
+                    </Button>
+
+                    <Separator Margin="3" />
+
+                    <Button ToolTip="Font Color" Margin="5,0">
+                        <Button.ContextMenu>
+                            <ContextMenu Style="{StaticResource ToggleContextMenu}">
+                                <!--<local:ColorPicker x:Name="FontColorPicker" />-->
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                        <fa5:FontAwesome Icon="Solid_Font" Foreground="{StaticResource GreenColor}" />
+                    </Button>
+
+                    <ToggleButton ToolTip="Line Color" Margin="5,0">
+                        <ToggleButton.ContextMenu>
+                            <ContextMenu x:Name="LineColorContextMenu"
+                                         Style="{StaticResource ToggleContextMenu}">
+                            </ContextMenu>
+                        </ToggleButton.ContextMenu>
+                        <fa5:FontAwesome Icon="Solid_PaintBrush" Foreground="{StaticResource GreenColor}" />
+                    </ToggleButton>
+
+                    <Button ToolTip="Clear Style" Margin="5,0">
+                        <!--<Image Style="{StaticResource ToolBarImage}"
+                               Source="/Images/erase.png" />-->
+
+                        <fa5:FontAwesome Icon="Solid_Eraser" Foreground="{StaticResource RedColor}" />
+                    </Button>
+
+                    <Separator />
+
+                    <ToggleButton ToolTip="Subscript" Margin="5,0" Command="EditingCommands.ToggleSubscript" CommandTarget="{Binding ElementName=rtf}" IsChecked="{Binding DocStyle.IsSubscript}" >
+                        <fa5:FontAwesome Icon="Solid_Subscript" Foreground="{StaticResource EditorOrangeColor}" />
+                    </ToggleButton>
+
+                    <ToggleButton ToolTip="Superscript" Margin="5,0" Command="EditingCommands.ToggleSuperscript" CommandTarget="{Binding ElementName=rtf}" IsChecked="{Binding DocStyle.IsSuperscript}">
+                        <fa5:FontAwesome Icon="Solid_Superscript" Foreground="{StaticResource EditorOrangeColor}" />
+                    </ToggleButton>
+
+                    <Button ToolTip="Indent" Margin="5,0" Command="EditingCommands.IncreaseIndentation" CommandTarget="{Binding ElementName=rtf}">
+                        <fa5:FontAwesome Icon="Solid_Indent" Foreground="{StaticResource GreenColor}" />
+                    </Button>
+
+                    <Button ToolTip="Outdent" Margin="5,0" Command="EditingCommands.DecreaseIndentation" CommandTarget="{Binding ElementName=rtf}">
+                        <fa5:FontAwesome Icon="Solid_Outdent" Foreground="{StaticResource GreenColor}" />
+                    </Button>
+
+                    <ToggleButton ToolTip="Bullet List" Margin="5,0" Command="EditingCommands.ToggleBullets" CommandTarget="{Binding ElementName=rtf}">
+                        <fa5:FontAwesome Icon="Solid_ListOl" Foreground="{StaticResource EditorOrangeColor}" />
+                    </ToggleButton>
+
+                    <ToggleButton ToolTip="Numbered List" Margin="5,0" Command="EditingCommands.ToggleNumbering" CommandTarget="{Binding ElementName=rtf}">
+                        <fa5:FontAwesome Icon="Solid_ListUl" Foreground="{StaticResource EditorOrangeColor}" />
+                    </ToggleButton>
+
+                    <RadioButton ToolTip="Justify Left" Margin="5,0" Command="EditingCommands.AlignLeft" CommandTarget="{Binding ElementName=rtf}"
+                                 IsChecked="{Binding DocStyle.IsLeftAligned}"
+                                 GroupName="Alignment">
+                        <fa5:FontAwesome Icon="Solid_AlignLeft" Foreground="{StaticResource BlueColor}" />
+                    </RadioButton>
+
+                    <RadioButton ToolTip="Justify Center" Margin="5,0" Command="EditingCommands.AlignCenter" CommandTarget="{Binding ElementName=rtf}"
+                                 IsChecked="{Binding DocStyle.IsCenterAligned}"
+                                 GroupName="Alignment">
+                        <fa5:FontAwesome Icon="Solid_AlignCenter" Foreground="{StaticResource BlueColor}" />
+                    </RadioButton>
+
+                    <RadioButton ToolTip="Justify Right" Margin="5,0" Command="EditingCommands.AlignRight" CommandTarget="{Binding ElementName=rtf}"
+                                 IsChecked="{Binding DocStyle.IsRightAligned}"
+                                 GroupName="Alignment">
+                        <fa5:FontAwesome Icon="Solid_AlignRight" Foreground="{StaticResource BlueColor}" />
+                    </RadioButton>
+
+                    <RadioButton ToolTip="Justify" Margin="5,0" Command="EditingCommands.AlignJustify" CommandTarget="{Binding ElementName=rtf}"
+                                 IsChecked="{Binding DocStyle.IsJustified}"
+                                 GroupName="Alignment">
+                        <fa5:FontAwesome Icon="Solid_AlignJustify" Foreground="{StaticResource BlueColor}" />
+                    </RadioButton>
+
+                </ToolBar>
+            </ToolBarTray>
+            <ToolBarTray>
+                <ToolBar Padding="3">
+
+                    <ComboBox Width="128" ItemsSource="{Binding TextBlocks}" />
+
+                    <ComboBox Width="128" ItemsSource="{Binding TextSymbols}" DisplayMemberPath="Key" SelectedValuePath="Value"
+                              SelectedItem="{Binding SelectedSymbol}">
+                        
+                    </ComboBox>
+
+                    <Button ToolTip="Insert Hyperlink" Margin="5,0">
+                        <!--<Image Style="{StaticResource ToolBarImage}"
+                               Source="/Images/hyperlink.png" />-->
+                        <fa5:FontAwesome Icon="Solid_Link" Foreground="{StaticResource BlueColor}" />
+                    </Button>
+                    <Button ToolTip="Insert Image" Margin="5,0">
+                        <!--<Image Style="{StaticResource ToolBarImage}"
+                               Source="/Images/image.png" />-->
+                        <fa5:FontAwesome Icon="Solid_Image" Foreground="{StaticResource GreenColor}" />
+                    </Button>
+
+                    <Button ToolTip="Insert Video" Margin="5,0">
+                        <!--<Image Style="{StaticResource ToolBarImage}"
+                               Source="/Images/table.png" />-->
+                        <fa5:FontAwesome Icon="Solid_Video" Foreground="{StaticResource RedColor}" />
+                    </Button>
+
+                    <Button ToolTip="Insert Table" Margin="5,0">
+                        <!--<Image Style="{StaticResource ToolBarImage}"
+                               Source="/Images/table.png" />-->
+                        <fa5:FontAwesome Icon="Solid_Table" Foreground="{StaticResource EditorOrangeColor}" />
+                    </Button>
+                    <Separator Margin="3" />
+
+                </ToolBar>
+            </ToolBarTray>
+
+        </StackPanel>
+
+        <Grid DockPanel.Dock="Bottom">
+            <ToolBarTray>
+                <ToolBar Margin="5">
+
+                    <RadioButton ToolTip="Text View" Margin="5,0" GroupName="ViewMode" IsChecked="{Binding DocMode.IsTextMode}">
+                        <fa5:FontAwesome Icon="Regular_File" Foreground="{StaticResource GreenColor}" />
+                    </RadioButton>
+
+                    <RadioButton ToolTip="HTML View" Margin="5,0" GroupName="ViewMode" IsChecked="{Binding DocMode.IsHtmlMode}">
+                        <fa5:FontAwesome Icon="Brands_Html5" Foreground="{StaticResource GreenColor}" />
+                    </RadioButton>
+
+                    <Separator Margin="3,0" />
+
+
+
+                </ToolBar>
+            </ToolBarTray>
+        </Grid>
+
+        <Grid>
+
+            <TextBox x:Name="CodeViewer" Visibility="{Binding DocMode.IsHtmlMode, Converter={StaticResource BoolToVisibility}}"
+                     Text="{Binding EditorContent}"
+                     Padding="10"
+                         AcceptsReturn="True"
+                         AcceptsTab="True"
+                         AutoWordSelection="True"
+                         VerticalScrollBarVisibility="Auto"
+                         TextWrapping="Wrap" FontFamily="Courier New" FontSize="13" />
+            <WebBrowser x:Name="CodeEditor" Visibility="Collapsed" Grid.ColumnSpan="2" />
+            <RichTextBox x:Name="rtf" Visibility="{Binding DocMode.IsTextMode, Converter={StaticResource BoolToVisibility}}"
+                         conv:RichTextBoxDependency.DocumentXaml="{Binding EditorContent, Mode=TwoWay}"
+                         Padding="10"
+                         TextOptions.TextFormattingMode="Ideal"
+                         TextOptions.TextRenderingMode="Aliased" 
+                         AcceptsTab="True" 
+                         AcceptsReturn="True" Grid.ColumnSpan="2">
+                <!--<FlowDocument conv:RichTextBoxDependency.DocumentXaml="{Binding EditorContent, Mode=TwoWay}" PagePadding="10" />-->
+                <i:Interaction.Behaviors>
+                    <conv:RichTextSelectionBehavior
+                        SelectedContent="{Binding SelectedContent}" />
+                </i:Interaction.Behaviors>
+            </RichTextBox>
+        </Grid>
+    </DockPanel>
+</UserControl>
